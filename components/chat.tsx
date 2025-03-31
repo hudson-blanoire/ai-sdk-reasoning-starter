@@ -3,7 +3,7 @@
 import cn from "classnames";
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Messages } from "./messages";
 import { modelID, models } from "@/lib/models";
 import { Footnote } from "./footnote";
@@ -20,6 +20,20 @@ export function Chat() {
   const [input, setInput] = useState<string>("");
   const [selectedModelId, setSelectedModelId] = useState<modelID>("sonnet-3.7");
   const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(true);
+  const [isAgenticEnabled, setIsAgenticEnabled] = useState<boolean>(false);
+
+  // Load model preference from localStorage if available
+  useEffect(() => {
+    const savedModel = localStorage.getItem("selectedModel");
+    if (savedModel && models[savedModel as modelID]) {
+      setSelectedModelId(savedModel as modelID);
+    }
+  }, []);
+
+  // Save model preference to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem("selectedModel", selectedModelId);
+  }, [selectedModelId]);
 
   const { messages, append, status, stop } = useChat({
     id: "primary",
@@ -29,6 +43,17 @@ export function Chat() {
   });
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
+
+  // Handle mutual exclusivity between reasoning and agentic modes
+  const handleReasoningToggle = () => {
+    setIsReasoningEnabled(true);
+    setIsAgenticEnabled(false);
+  };
+
+  const handleAgenticToggle = () => {
+    setIsAgenticEnabled(true);
+    setIsReasoningEnabled(false);
+  };
 
   return (
     <div
@@ -45,10 +70,10 @@ export function Chat() {
       ) : (
         <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
           <div className="flex flex-row gap-2 items-center">
-            <div>Welcome to the AI SDK Reasoning Preview.</div>
+            <div>Welcome to Atoma</div>
           </div>
           <div className="dark:text-zinc-500 text-zinc-400">
-            What would you like me to think about today?
+            How can I assist you today?
           </div>
         </div>
       )}
@@ -63,7 +88,7 @@ export function Chat() {
             isReasoningEnabled={isReasoningEnabled}
           />
 
-          <div className="absolute bottom-2.5 left-2.5">
+          <div className="absolute bottom-2.5 left-2.5 flex gap-2">
             <button
               disabled={selectedModelId !== "sonnet-3.7"}
               className={cn(
@@ -72,20 +97,28 @@ export function Chat() {
                   "dark:bg-zinc-600 bg-zinc-200": isReasoningEnabled,
                 },
               )}
-              onClick={() => {
-                setIsReasoningEnabled(!isReasoningEnabled);
-              }}
+              onClick={handleReasoningToggle}
             >
               {isReasoningEnabled ? <CheckedSquare /> : <UncheckedSquare />}
               <div>Reasoning</div>
+            </button>
+            
+            <button
+              className={cn(
+                "relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-2 dark:hover:bg-zinc-600 hover:bg-zinc-200 cursor-pointer",
+                {
+                  "dark:bg-zinc-600 bg-zinc-200": isAgenticEnabled,
+                },
+              )}
+              onClick={handleAgenticToggle}
+            >
+              {isAgenticEnabled ? <CheckedSquare /> : <UncheckedSquare />}
+              <div>Agentic</div>
             </button>
           </div>
 
           <div className="absolute bottom-2.5 right-2.5 flex flex-row gap-2">
             <div className="relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-0.5 dark:hover:bg-zinc-700 hover:bg-zinc-200 cursor-pointer">
-              {/* <div>
-                {selectedModel ? selectedModel.name : "Models Unavailable!"}
-              </div> */}
               <div className="flex justify-center items-center text-zinc-500 dark:text-zinc-400 px-1">
                 <span className="pr-1">{models[selectedModelId]}</span>
                 <ChevronDownIcon />
@@ -95,10 +128,11 @@ export function Chat() {
                 className="absolute opacity-0 w-full p-1 left-0 cursor-pointer"
                 value={selectedModelId}
                 onChange={(event) => {
-                  if (event.target.value !== "sonnet-3.7") {
-                    setIsReasoningEnabled(true);
+                  const newModelId = event.target.value as modelID;
+                  if (newModelId !== "sonnet-3.7") {
+                    setIsReasoningEnabled(false);
                   }
-                  setSelectedModelId(event.target.value as modelID);
+                  setSelectedModelId(newModelId);
                 }}
               >
                 {Object.entries(models).map(([id, name]) => (

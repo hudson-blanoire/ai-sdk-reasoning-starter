@@ -1,6 +1,6 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { fireworks } from "@ai-sdk/fireworks";
 import { groq } from "@ai-sdk/groq";
+import { openai } from "@ai-sdk/openai";
 import {
   customProvider,
   extractReasoningMiddleware,
@@ -21,19 +21,25 @@ export const myProvider = customProvider({
           },
         },
       }),
-      model: anthropic("claude-3-7-sonnet-20250219"),
+      model: anthropic("claude-3-7-sonnet"),
     }),
-    "deepseek-r1": wrapLanguageModel({
+    "llama-3.3-70b": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
         tagName: "think",
       }),
-      model: fireworks("accounts/fireworks/models/deepseek-r1"),
+      model: groq("llama-3.3-70b-versatile"),
     }),
-    "deepseek-r1-distill-llama-70b": wrapLanguageModel({
+    "gpt-4o": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
         tagName: "think",
       }),
-      model: groq("deepseek-r1-distill-llama-70b"),
+      model: openai("gpt-4o"),
+    }),
+    "o3-mini": wrapLanguageModel({
+      middleware: extractReasoningMiddleware({
+        tagName: "think",
+      }),
+      model: openai("o3-mini"),
     }),
   },
 });
@@ -42,6 +48,7 @@ export type modelID = Parameters<(typeof myProvider)["languageModel"]>["0"];
 
 export const models: Record<modelID, string> = {
   "sonnet-3.7": "Claude Sonnet 3.7",
-  "deepseek-r1": "DeepSeek-R1",
-  "deepseek-r1-distill-llama-70b": "DeepSeek-R1 Llama 70B",
+  "llama-3.3-70b": "Llama 3.3 70B",
+  "gpt-4o": "GPT-4o",
+  "o3-mini": "o3-mini",
 };

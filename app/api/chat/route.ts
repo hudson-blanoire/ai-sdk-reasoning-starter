@@ -7,15 +7,18 @@ export async function POST(request: NextRequest) {
     messages,
     selectedModelId,
     isReasoningEnabled,
+    isAgenticEnabled,
   }: {
     messages: Array<Message>;
     selectedModelId: modelID;
     isReasoningEnabled: boolean;
+    isAgenticEnabled: boolean;
   } = await request.json();
 
   const stream = streamText({
-    system:
-      "you are a friendly assistant. do not use emojis in your responses.",
+    system: isAgenticEnabled
+      ? "You are a proactive assistant with access to the latest information. When a user asks about recent events, news, or facts that might be outside your training data, use the Exa search tool to find current information. Always cite your sources."
+      : "You are a friendly assistant. When you're unsure or need current information, you can search the web to provide accurate answers.",
     providerOptions:
       selectedModelId === "sonnet-3.7" && isReasoningEnabled === false
         ? {
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
   });
 
   return stream.toDataStreamResponse({
-    sendReasoning: true,
+    sendReasoning: isReasoningEnabled,
     getErrorMessage: () => {
       return `An error occurred, please try again!`;
     },
