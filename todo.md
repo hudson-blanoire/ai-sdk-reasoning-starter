@@ -56,14 +56,14 @@ This document tracks all tasks that need to be completed for the IntelIP Atoma A
 
 ## Phase 4: Authentication & Data Persistence
 
-- [ ] **Authentication**
-  - [ ] Design login form UI
-  - [ ] Implement Google authentication
-  - [ ] Install Supabase client
-  - [ ] Set up JWT handling
-  - [ ] Create sign-up process
-  - [ ] Add email verification
-  - [ ] Implement password reset
+- [ ] **Authentication with Clerk**
+  - [ ] Install Clerk package (`pnpm add @clerk/nextjs`)
+  - [ ] Set up Clerk API keys in environment variables
+  - [ ] Create middleware.ts file for route protection
+  - [ ] Add ClerkProvider to layout.tsx
+  - [ ] Customize sign-in and sign-up UI
+  - [ ] Implement social authentication (Google)
+  - [ ] Set up user profile management
 
 - [ ] **Database Setup**
   - [ ] Create Supabase project
@@ -90,10 +90,9 @@ This document tracks all tasks that need to be completed for the IntelIP Atoma A
   - [ ] Add session management capabilities
 
 - [ ] **User Profile**
-  - [ ] Create settings interface
-  - [ ] Add profile picture upload
-  - [ ] Implement display name editing
-  - [ ] Add account management options
+  - [ ] Integrate Clerk user profile components
+  - [ ] Customize profile settings interface
+  - [ ] Link profile data with chat history
 
 - [ ] **Chat Experience**
   - [ ] Integrate React Markdown

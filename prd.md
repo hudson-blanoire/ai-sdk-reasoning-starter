@@ -152,24 +152,27 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
 
 ## Phase 4: User Authentication & Data Persistence (Week 4)
 
-### 4.1 Create Login Page (Days 1-3)
-- **Task 4.1.1**: Design authentication UI
-  - Create login form with email/password fields
-  - Add "Login with Google" button
-  - Implement form validation and error messaging
-  - **Git Push**: Commit changes with message "Create authentication UI components"
+### 4.1 Implement Clerk Authentication (Days 1-3)
+- **Task 4.1.1**: Set up Clerk integration
+  - Install Clerk package (`pnpm add @clerk/nextjs`)
+  - Set up Clerk API keys in environment variables:
+    - Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+    - Add CLERK_SECRET_KEY
+  - Create middleware.ts file for route protection
+  - **Git Push**: Commit changes with message "Set up Clerk authentication integration"
 
-- **Task 4.1.2**: Set up Supabase Authentication
-  - Install Supabase client (`pnpm add @supabase/supabase-js`)
-  - Configure authentication providers (email, Google)
-  - Implement JWT token handling and secure storage
-  - **Git Push**: Commit changes with message "Set up Supabase Authentication integration"
+- **Task 4.1.2**: Implement ClerkProvider
+  - Add ClerkProvider to layout.tsx
+  - Configure authentication components in header
+  - Set up SignInButton and SignUpButton components
+  - Implement UserButton for signed-in users
+  - **Git Push**: Commit changes with message "Implement ClerkProvider and authentication UI"
 
-- **Task 4.1.3**: Create authentication flows
-  - Build sign-up process
-  - Implement email verification
-  - Create password reset functionality
-  - **Git Push**: Commit changes with message "Implement complete authentication flows"
+- **Task 4.1.3**: Customize authentication flows
+  - Style authentication UI to match application design
+  - Configure social authentication providers (Google)
+  - Set up protected routes with authentication checks
+  - **Git Push**: Commit changes with message "Customize Clerk authentication flows"
 
 ### 4.2 Set up PostgreSQL Database (Days 4-5)
 - **Task 4.2.1**: Configure Supabase PostgreSQL
@@ -179,15 +182,9 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
   - **Git Push**: Commit changes with message "Configure Supabase PostgreSQL connection"
 
 - **Task 4.2.2**: Design database schema
-  - Create `users` table with fields:
-    - id (UUID, primary key)
-    - email (string, unique)
-    - created_at (timestamp)
-    - last_login (timestamp)
-    - subscription_status (string)
   - Create `chat_sessions` table with fields:
     - id (UUID, primary key)
-    - user_id (UUID, foreign key)
+    - clerk_user_id (string, for integration with Clerk)
     - title (string)
     - created_at (timestamp)
     - updated_at (timestamp)
@@ -198,7 +195,7 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
     - content (text)
     - model (string)
     - created_at (timestamp)
-  - **Git Push**: Commit changes with message "Create database schema for users, sessions, and messages"
+  - **Git Push**: Commit changes with message "Create database schema for chat sessions and messages"
 
 - **Task 4.2.3**: Implement database access layer
   - Create data access objects for each table
@@ -211,7 +208,8 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
   - Create function to save new messages
   - Implement automatic session creation
   - Add session naming functionality
-  - **Git Push**: Commit changes with message "Implement chat message persistence"
+  - Link chat history with Clerk user ID
+  - **Git Push**: Commit changes with message "Implement chat message persistence with Clerk user ID"
 
 - **Task 4.3.2**: Implement session management
   - Create unique IDs for each conversation
@@ -235,7 +233,7 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
   - **Git Push**: Commit changes with message "Integrate Aceternity sidebar component"
 
 - **Task 5.1.2**: Populate sidebar with chat history
-  - Fetch user's chat sessions from database
+  - Fetch user's chat sessions from database using Clerk user ID
   - Display sessions with titles and timestamps
   - Implement search functionality for finding past chats
   - **Git Push**: Commit changes with message "Populate sidebar with user's chat history"
@@ -246,24 +244,23 @@ This roadmap provides a detailed, step-by-step guide for developing the IntelIP 
   - Create folder/organization system for sessions
   - **Git Push**: Commit changes with message "Add session management capabilities to sidebar"
 
-### 5.2 Create User Profile Page (Days 4-5)
-- **Task 5.2.1**: Design settings interface
-  - Create settings page layout
-  - Implement navigation between settings sections
-  - Add form components for user information
-  - **Git Push**: Commit changes with message "Create user settings interface"
+### 5.2 Integrate Clerk User Profile (Days 4-5)
+- **Task 5.2.1**: Implement Clerk user profile components
+  - Create profile settings page
+  - Integrate Clerk's UserProfile component
+  - Style to match application design
+  - **Git Push**: Commit changes with message "Implement Clerk user profile components"
 
-- **Task 5.2.2**: Implement profile customization
-  - Add profile picture upload via Supabase Storage
-  - Create display name editing
-  - Implement email change with verification
-  - **Git Push**: Commit changes with message "Implement profile customization features"
+- **Task 5.2.2**: Extend profile functionality
+  - Link profile data with chat history and preferences
+  - Add custom fields for user preferences if needed
+  - **Git Push**: Commit changes with message "Extend Clerk profile with application-specific data"
 
-- **Task 5.2.3**: Add account management
-  - Create password change functionality
-  - Implement account deletion
-  - Add linked accounts management
-  - **Git Push**: Commit changes with message "Add account management options"
+- **Task 5.2.3**: Implement organization features
+  - Set up organization capabilities if needed 
+  - Configure permission settings
+  - Add role-based access control
+  - **Git Push**: Commit changes with message "Implement organization features with Clerk"
 
 ### 5.3 Improve Chat Experience (Days 6-7)
 - **Task 5.3.1**: Enhance message rendering
