@@ -6,49 +6,39 @@ This document tracks all tasks that need to be completed for the IntelIP Atoma A
 
 - [ ] **UI Cleanup**
   - [ ] Remove all Vercel branding
-  - [ ] Update favicon and page titles 
-  - [ ] Replace color scheme with IntelIP palette
-  - [ ] Update UI components with IntelIP branding
-  - [ ] Test responsive design across screen sizes
+  - [ ] Update page titles to Atoma using the Current Title Font
 
 - [ ] **Model Infrastructure**
-  - [ ] Verify Claude 3.7 Sonnet integration
-  - [ ] Set up environment variables
-  - [ ] Create model type definitions
-  - [ ] Build provider abstraction layer
-  - [ ] Create model selection UI components
+  - [ ] Set up environment variables for OPENAI & GROQ
 
 ## Phase 2: Model Integration
 
 - [ ] **Llama 3.3 70B via Groq**
-  - [ ] Install Groq package
+  - [ ] Install Groq package via the Vercel AI SDK
   - [ ] Set up Groq API integration
   - [ ] Configure model parameters (temp: 0.1, max tokens: 8192)
   - [ ] Test streaming capabilities
 
 - [ ] **OpenAI Models**
-  - [ ] Install OpenAI package 
+  - [ ] Install OpenAI package via the Vercel AI SDK
   - [ ] Implement OpenAI provider
   - [ ] Configure GPT-4o model
   - [ ] Configure o3-mini model
   - [ ] Test performance
 
 - [ ] **Model Switching UI**
-  - [ ] Enhance selection dropdown with icons/descriptions
-  - [ ] Create settings panel for parameter adjustments
   - [ ] Implement localStorage persistence
 
 ## Phase 3: Agentic Mode
 
 - [ ] **Agentic Toggle**
-  - [ ] Create toggle button next to Reasoning checkbox
+  - [ ] Create toggle button next to Reasoning checkbox designed just like the Reasoning Checkboc
   - [ ] Implement mutual exclusivity logic
   - [ ] Add transition animations
   - [ ] Create visual indicators for active state
 
 - [ ] **Exa.AI Search**
-  - [ ] Register for API access
-  - [ ] Create API wrapper function
+  - [ ] Add Exa.AI Search to tools within all the LLMs. Utilize Vercel AI SDK tool calling for this.
   - [ ] Implement search middleware
   - [ ] Add citation generation
   - [ ] Configure search parameters

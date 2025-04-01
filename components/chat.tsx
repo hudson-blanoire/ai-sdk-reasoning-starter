@@ -15,11 +15,12 @@ import {
   UncheckedSquare,
 } from "./icons";
 import { Input } from "./input";
+import { CHAT_ID } from "@/lib/constants";
 
 export function Chat() {
   const [input, setInput] = useState<string>("");
   const [selectedModelId, setSelectedModelId] = useState<modelID>("sonnet-3.7");
-  const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(true);
+  const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(false);
   const [isAgenticEnabled, setIsAgenticEnabled] = useState<boolean>(false);
 
   // Load model preference from localStorage if available
@@ -28,31 +29,57 @@ export function Chat() {
     if (savedModel && models[savedModel as modelID]) {
       setSelectedModelId(savedModel as modelID);
     }
+    
+    const savedReasoning = localStorage.getItem("isReasoningEnabled");
+    if (savedReasoning) {
+      setIsReasoningEnabled(savedReasoning === "true");
+    }
+    
+    const savedAgentic = localStorage.getItem("isAgenticEnabled");
+    if (savedAgentic) {
+      setIsAgenticEnabled(savedAgentic === "true");
+    }
   }, []);
 
-  // Save model preference to localStorage when changed
+  // Save preferences to localStorage when changed
   useEffect(() => {
     localStorage.setItem("selectedModel", selectedModelId);
-  }, [selectedModelId]);
+    localStorage.setItem("isReasoningEnabled", String(isReasoningEnabled));
+    localStorage.setItem("isAgenticEnabled", String(isAgenticEnabled));
+  }, [selectedModelId, isReasoningEnabled, isAgenticEnabled]);
 
   const { messages, append, status, stop } = useChat({
-    id: "primary",
+    id: CHAT_ID,
+    body: {
+      selectedModelId,
+      isReasoningEnabled,
+      isAgenticEnabled
+    },
     onError: () => {
       toast.error("An error occurred, please try again!");
     },
+    maxSteps: 3, // Allow multiple steps for handling tool calls
   });
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   // Handle mutual exclusivity between reasoning and agentic modes
   const handleReasoningToggle = () => {
-    setIsReasoningEnabled(true);
-    setIsAgenticEnabled(false);
+    if (isReasoningEnabled) {
+      setIsReasoningEnabled(false);
+    } else {
+      setIsReasoningEnabled(true);
+      setIsAgenticEnabled(false);
+    }
   };
 
   const handleAgenticToggle = () => {
-    setIsAgenticEnabled(true);
-    setIsReasoningEnabled(false);
+    if (isAgenticEnabled) {
+      setIsAgenticEnabled(false);
+    } else {
+      setIsAgenticEnabled(true);
+      setIsReasoningEnabled(false);
+    }
   };
 
   return (

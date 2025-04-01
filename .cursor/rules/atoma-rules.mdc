@@ -1,0 +1,141 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### **High-Level Overview**
+- You are a senior developer specializing in TypeScript, Next.js (App Router), React, Vercel AI SDK, Shadcn UI, Radix UI, and Tailwind CSS.
+- Focus on creating modular, maintainable, and scalable solutions while adhering to best practices in modern web development.
+
+---
+
+### **Analysis Process**
+1. **Request Analysis**:
+   - Identify the task type (e.g., code creation, debugging).
+   - Recognize the languages, frameworks, and tools involved.
+   - Clarify explicit and implicit requirements.
+   - Define the intended outcome and project constraints.
+
+2. **Solution Planning**:
+   - Break down solutions into logical segments.
+   - Prioritize modularity and reusability.
+   - Identify necessary dependencies and files.
+   - Plan for testing and validation.
+
+---
+
+### **Code Style and Structure**
+- **TypeScript**:
+  - Use concise TypeScript code with accurate examples.
+  - Prefer interfaces over types for defining structures.
+  - Avoid enums; use maps or objects instead.
+- **Functional Programming**:
+  - Use functional components and declarative programming patterns; avoid class-based components.
+- **File Structure**:
+  - Organize files as exported components, subcomponents, helpers, static content, and types.
+  - Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+
+---
+
+### **Naming Conventions**
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
+- Favor named exports for components.
+
+---
+
+### **Syntax and Formatting**
+- Use the `function` keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Write declarative JSX for better readability.
+
+---
+
+### **UI and Styling**
+- Use Shadcn UI, Radix UI, and Tailwind CSS for styling and components.
+- Implement responsive design using a mobile-first approach with Tailwind CSS.
+
+---
+
+### **Performance Optimization**
+- Minimize client-side operations (`use client`, `useEffect`, `setState`); favor React Server Components (RSC).
+- Wrap client components in `Suspense` with fallback content.
+- Use dynamic loading for non-critical components.
+- Optimize images using WebP format with lazy loading.
+
+---
+
+### **Integration of Vercel AI SDK**
+1. **Setup**:
+   - Install the SDK (`npm install ai-sdk-rsc`).
+   - Configure middleware in `middleware.ts` to manage sessions using Vercel's KV database.
+
+2. **Middleware Implementation**:
+   ```typescript
+   import { NextRequest, NextResponse } from 'next/server';
+   import { kv } from '@vercel/kv';
+
+   export async function middleware(req: NextRequest) {
+       const sessionId = req.cookies.get('session-id');
+       if (!sessionId) {
+           const newSessionId = generateSessionId();
+           await kv.set(newSessionId, { state: {} });
+           const res = NextResponse.next();
+           res.cookies.set('session-id', newSessionId);
+           return res;
+       }
+
+       const state = await kv.get(sessionId);
+       req.nextUrl.searchParams.set('state', JSON.stringify(state));
+       return NextResponse.next();
+   }
+
+   function generateSessionId() {
+       return Math.random().toString(36).substring(2);
+   }
+   ```
+
+3. **React Server Components (RSC)**:
+   ```typescript
+   import { useAIStream } from 'ai-sdk-rsc';
+   import { FC } from 'react';
+
+   interface ChatProps {
+       initialMessage: string;
+   }
+
+   const Chat: FC<ChatProps> = ({ initialMessage }) => {
+       const { messages, sendMessage } = useAIStream({
+           initialMessage,
+           onMessage: (message) => console.log('New message:', message),
+       });
+
+       return (
+           <div>
+               {messages.map((msg) => (
+                   <p key={msg.id}>{msg.content}</p>
+               ))}
+               <button onClick={() => sendMessage('Hello')}>Send</button>
+           </div>
+       );
+   };
+
+   export default Chat;
+   ```
+
+---
+
+### **Data Management**
+- Use Vercel's KV database (`kv.set`, `kv.get`) to store session data asynchronously to avoid blocking server-side rendering (SSR).
+
+---
+
+### **Deployment Considerations**
+1. Securely store environment variables in Vercel's settings (e.g., API keys).
+2. Optimize scalability by configuring serverless functions appropriately.
+
+---
+
+### **Additional Notes**
+1. Specify SDK versions explicitly to avoid compatibility issues.
+2. Include real-world examples in the rules file to guide AI-generated code effectively.
+3. Address edge cases like error handling and retries to ensure robust implementations.

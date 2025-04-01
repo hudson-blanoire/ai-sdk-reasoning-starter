@@ -1,13 +1,17 @@
 "use client";
 
-import cn from "classnames";
 import Markdown from "react-markdown";
 import { markdownComponents } from "./markdown-components";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon, SpinnerIcon } from "./icons";
-import { UIMessage } from "ai";
-import { UseChatHelpers } from "@ai-sdk/react";
+import { Message, ToolInvocation, useChat } from '@ai-sdk/react'
+import ReactMarkdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
+import { convertExaResultsToSearchResults } from '@/lib/types'
+import { SearchSection } from './search-section'
+import { CHAT_ID } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 
 interface ReasoningPart {
   type: "reasoning";
@@ -116,71 +120,187 @@ export function TextMessagePart({ text }: TextMessagePartProps) {
   );
 }
 
-interface MessagesProps {
-  messages: Array<UIMessage>;
-  status: UseChatHelpers["status"];
+export interface MessagesProps {
+  messages: Message[]
+  status: ReturnType<typeof useChat>['status']
 }
 
 export function Messages({ messages, status }: MessagesProps) {
-  const messagesRef = useRef<HTMLDivElement>(null);
-  const messagesLength = useMemo(() => messages.length, [messages]);
+  const [openToolId, setOpenToolId] = useState<string | null>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
+  const messagesLength = useMemo(() => messages.length, [messages])
 
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight
     }
-  }, [messagesLength]);
+  }, [messagesLength])
 
   return (
-    <div
-      className="flex flex-col gap-8 overflow-y-scroll items-center w-full"
-      ref={messagesRef}
-    >
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={cn(
-            "flex flex-col gap-4 last-of-type:mb-12 first-of-type:mt-16 w-full",
-          )}
-        >
-          <div
-            className={cn("flex flex-col gap-4", {
-              "dark:bg-zinc-800 bg-zinc-200 p-2 rounded-xl w-fit ml-auto":
-                message.role === "user",
-              "": message.role === "assistant",
-            })}
-          >
-            {message.parts.map((part, partIndex) => {
-              if (part.type === "text") {
-                return (
-                  <TextMessagePart
-                    key={`${message.id}-${partIndex}`}
-                    text={part.text}
-                  />
-                );
-              }
+    <div className="flex flex-col overflow-y-auto w-full mb-4" ref={messagesRef}>
+      {messages.map((message, index) => {
+        // Handle user messages
+        if (message.role === 'user') {
+          return (
+            <div
+              key={`${message.role}-${index}`}
+              className="flex flex-col items-end mb-8"
+            >
+              <div className="rounded-xl dark:bg-zinc-800 bg-zinc-100 py-2 px-4 w-fit max-w-full sm:max-w-[85%] md:max-w-[75%] whitespace-pre-wrap break-words">
+                <p>{message.content}</p>
+              </div>
+            </div>
+          )
+        }
 
-              if (part.type === "reasoning") {
-                return (
-                  <ReasoningMessagePart
-                    key={`${message.id}-${partIndex}`}
-                    // @ts-expect-error export ReasoningUIPart
-                    part={part}
-                    isReasoning={
-                      status === "streaming" &&
-                      partIndex === message.parts.length - 1
+        // Handle assistant messages with proper parts handling
+        return (
+          <div key={`${message.role}-${index}`} className="mb-8">
+            {/* Handle message parts - a more modern approach than looking at content */}
+            {message.parts && (
+              <div className="space-y-4">
+                {message.parts.map((part, partIndex) => {
+                  // Handle text parts
+                  if (part.type === 'text') {
+                    return (
+                      <div 
+                        key={`text-${partIndex}`} 
+                        className="flex flex-col items-start"
+                      >
+                        <div className="rounded-xl py-2 px-4 w-fit max-w-full sm:max-w-[85%] md:max-w-[75%] dark:bg-zinc-800 bg-zinc-100 whitespace-pre-wrap break-words">
+                          <ReactMarkdown
+                            rehypePlugins={[rehypeRaw as any]}
+                            components={markdownComponents}
+                            className="prose dark:prose-invert prose-zinc prose-sm sm:prose-base max-w-none"
+                          >
+                            {part.text}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    )
+                  }
+                  
+                  // Handle tool invocations
+                  if (part.type === 'tool-invocation') {
+                    const { toolInvocation } = part
+                    
+                    // Special case for search tools
+                    if (toolInvocation.toolName === 'exaSearch') {
+                      // If the tool is still executing, show loading state
+                      if (toolInvocation.state === 'call') {
+                        return (
+                          <div 
+                            key={`tool-${partIndex}`}
+                            className="flex flex-col items-start"
+                          >
+                            <div className="rounded-xl py-2 px-4 dark:bg-zinc-800 bg-zinc-100 w-fit">
+                              <div className="flex items-center space-x-2">
+                                <div className="animate-spin h-4 w-4 border-2 border-zinc-500 rounded-full border-t-transparent"></div>
+                                <span>Searching for: {toolInvocation.args.query}...</span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      }
+                      
+                      // If the tool has completed, show results
+                      if (toolInvocation.state === 'result') {
+                        return (
+                          <SearchSection
+                            key={`tool-${partIndex}`}
+                            tool={toolInvocation}
+                            isOpen={openToolId === toolInvocation.id}
+                            onOpenChange={(open) => setOpenToolId(open ? toolInvocation.id : null)}
+                          />
+                        )
+                      }
+                      
+                      // Handle error state
+                      if (toolInvocation.state === 'error') {
+                        return (
+                          <div 
+                            key={`tool-${partIndex}`}
+                            className="flex flex-col items-start"
+                          >
+                            <div className="rounded-xl py-2 px-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 w-fit">
+                              <p>Error searching: {toolInvocation.error || 'Unknown error'}</p>
+                            </div>
+                          </div>
+                        )
+                      }
                     }
+                  }
+                  
+                  // Handle source attribution
+                  if (part.type === 'source') {
+                    return (
+                      <div 
+                        key={`source-${partIndex}`}
+                        className="flex flex-col items-start"
+                      >
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 ml-4">
+                          Source: <a 
+                            href={part.source.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="underline"
+                          >
+                            {part.source.title || part.source.url}
+                          </a>
+                        </div>
+                      </div>
+                    )
+                  }
+                  
+                  return null
+                })}
+              </div>
+            )}
+            
+            {/* Handle old-style content for backward compatibility */}
+            {!message.parts && message.content && (
+              <div className="flex flex-col items-start">
+                <div className="rounded-xl py-2 px-4 w-fit max-w-full sm:max-w-[85%] md:max-w-[75%] dark:bg-zinc-800 bg-zinc-100 whitespace-pre-wrap break-words">
+                  <ReactMarkdown
+                    rehypePlugins={[rehypeRaw as any]}
+                    components={markdownComponents}
+                    className="prose dark:prose-invert prose-zinc prose-sm sm:prose-base max-w-none"
+                  >
+                    {typeof message.content === 'string' ? message.content : ''}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            )}
+            
+            {/* Handle legacy tool invocations using the toolInvocations property */}
+            {message.toolInvocations?.map((tool, toolIndex) => {
+              if (tool.toolName === 'exaSearch') {
+                return (
+                  <SearchSection
+                    key={`legacy-tool-${toolIndex}`}
+                    tool={tool}
+                    isOpen={openToolId === tool.id}
+                    onOpenChange={(open) => setOpenToolId(open ? tool.id : null)}
                   />
-                );
+                )
               }
+              return null
             })}
           </div>
-        </div>
-      ))}
+        )
+      })}
 
-      {status === "submitted" && (
-        <div className="text-zinc-500 mb-12 w-full">Hmm...</div>
+      {/* Show a typing indicator when streaming */}
+      {status === 'streaming' && (
+        <div className="rounded-xl py-2 px-4 dark:bg-zinc-800 bg-zinc-100 w-fit mb-8">
+          <div className="flex gap-1.5">
+            <div className="dark:bg-zinc-500 bg-zinc-400 animate-pulse w-1.5 h-1.5 rounded-full"></div>
+            <div className="dark:bg-zinc-500 bg-zinc-400 animate-pulse animation-delay-200 w-1.5 h-1.5 rounded-full"></div>
+            <div className="dark:bg-zinc-500 bg-zinc-400 animate-pulse animation-delay-400 w-1.5 h-1.5 rounded-full"></div>
+          </div>
+        </div>
       )}
     </div>
-  );
+  )
 }

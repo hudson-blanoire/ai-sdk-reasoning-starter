@@ -16,12 +16,12 @@ export const myProvider = customProvider({
         settings: {
           providerMetadata: {
             anthropic: {
-              thinking: { type: "enabled", budgetTokens: 5000 },
+              thinking: { type: "enabled", budgetTokens: 32000 },
             },
           },
         },
       }),
-      model: anthropic("claude-3-7-sonnet"),
+      model: anthropic("claude-3-7-sonnet-20250219"),
     }),
     "llama-3.3-70b": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
