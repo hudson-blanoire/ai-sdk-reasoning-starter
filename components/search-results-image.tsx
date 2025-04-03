@@ -34,6 +34,7 @@ export const SearchResultsImageSection: React.FC<
   const [current, setCurrent] = useState(0)
   const [count, setCount] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [showFullCarousel, setShowFullCarousel] = useState(false)
 
   // Update the current and count state when the carousel api is available
   useEffect(() => {
@@ -60,21 +61,21 @@ export const SearchResultsImageSection: React.FC<
     return <div className="text-muted-foreground">No images found</div>
   }
 
-  // If enabled the include_images_description is true, the images will be an array of { url: string, description: string }
-  // Otherwise, the images will be an array of strings
+  // Process images to ensure they all have the correct format
   let convertedImages: { url: string; description: string }[] = []
-  if (typeof images[0] === 'string') {
-    convertedImages = (images as string[]).map(image => ({
-      url: image,
-      description: ''
-    }))
-  } else {
-    convertedImages = images as { url: string; description: string }[]
-  }
+  convertedImages = images.map(image => {
+    if (typeof image === 'string') {
+      return { url: image, description: '' };
+    } else {
+      return { url: image.url, description: image.description || '' };
+    }
+  });
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {convertedImages.slice(0, 4).map((image, index) => (
+    <div>
+      <h3 className="text-sm font-medium mb-2">Related Images</h3>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {convertedImages.slice(0, 4).map((image, index) => (
         <Dialog key={index}>
           <DialogTrigger asChild>
             <div
@@ -98,8 +99,15 @@ export const SearchResultsImageSection: React.FC<
                 </CardContent>
               </Card>
               {index === 3 && images.length > 4 && (
-                <div className="absolute inset-0 bg-black/30 rounded-md flex items-center justify-center text-white/80 text-sm">
-                  <PlusCircle size={24} />
+                <div 
+                  className="absolute inset-0 bg-black/30 rounded-md flex items-center justify-center text-white/80 text-sm cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowFullCarousel(true);
+                  }}
+                >
+                  <PlusCircle className="mr-1" size={16} />
+                  {images.length - 4} more
                 </div>
               )}
             </div>
@@ -147,6 +155,51 @@ export const SearchResultsImageSection: React.FC<
           </DialogContent>
         </Dialog>
       ))}
+      </div>
+      
+      {/* Full Carousel Modal for viewing all images */}
+      <Dialog open={showFullCarousel} onOpenChange={setShowFullCarousel}>
+        <DialogContent className="sm:max-w-2xl p-0 gap-0 bg-zinc-100 dark:bg-zinc-900">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-lg font-semibold">
+              {query ? `Images for "${query}"` : 'Search Results Images'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="relative p-4 pt-0">
+            <Carousel setApi={setApi} className="w-full">
+              <CarouselContent>
+                {convertedImages.map((image, index) => (
+                  <CarouselItem key={index} className="md:basis-1/1">
+                    <div className="p-1 flex flex-col items-center">
+                      <Card className="w-full overflow-hidden">
+                        <CardContent className="flex aspect-video justify-center items-center p-0">
+                          <img
+                            src={image.url}
+                            alt={image.description || `Image ${index + 1}`}
+                            className="object-contain max-h-full w-full"
+                            onError={e => (e.currentTarget.src = '/images/placeholder-image.png')}
+                          />
+                        </CardContent>
+                      </Card>
+                      {image.description && (
+                        <p className="text-sm text-center mt-2 px-2 text-muted-foreground">{image.description}</p>
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+            <div className="flex justify-center w-full py-2 gap-2">
+              <span className="text-xs text-zinc-500">
+                {current} / {count}
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

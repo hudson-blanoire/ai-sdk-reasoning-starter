@@ -35,58 +35,31 @@ export async function POST(request: NextRequest) {
     isReasoningEnabled?: boolean;
     isAgenticEnabled?: boolean;
   } = await request.json();
-
-  // Ensure valid model ID is used
-  const modelId = selectedModelId && Object.keys(models).includes(selectedModelId)
-    ? selectedModelId 
-    : "sonnet-3.7";
-    
-  console.log("Using model:", modelId);
-
-  // Ensure the API key is properly set
-  const exaApiKey = process.env.EXA_API_KEY;
-  console.log("Exa API Key configured:", exaApiKey ? "Yes" : "No");
   
-  // Prepare system message based on whether we have a valid API key
-  const systemMessage = exaApiKey 
-    ? `You are an expert research assistant. Follow these strict rules:
-1. When using Exa search:
-   - Begin with a direct answer to the question
-   - Summarize key findings from top 3 most relevant sources
-   - Include explanations for complex terms
-   - Use markdown formatting for clarity
-   - Present sources as: [Title](URL)
-   - MUST format response as:
-     """
-     **Direct Answer**  
-     {concise 1-2 sentence response}
+  // Get current date and time information
+  const now = new Date();
+  const currentDate = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const currentTime = now.toLocaleTimeString('en-US');
+  
+  // Prepare system message with specific 2-step flow instructions and current temporal context
+  const systemMessage = `You are a research assistant who follows a strict 2-step process:
 
-     **Key Information**  
-     - {Bullet point from Source 1} [Source 1 Title](URL1)  
-     - {Bullet point from Source 2} [Source 2 Title](URL2)  
-     - {Explanation of complex terms} [Relevant Source]
+1. FIRST STEP: When you receive a question, use the exaSearch tool ONCE to gather relevant information.
+2. SECOND STEP: After receiving search results, provide a comprehensive answer based ONLY on those results without making additional searches.
 
-     **Sources**  
-     {Numbered list of all sources used}
-     """
+Current temporal context: Today is ${currentDate}, and the current time is ${currentTime}. It is currently the year ${now.getFullYear()}. Always consider this current temporal information when formulating search queries and providing responses.
 
-2. For time-sensitive queries:
-   - Highlight dates/times in bold
-   - Compare information across multiple sources
-   - Note any discrepancies between sources
-
-3. General guidelines:
-   - Keep paragraphs under 3 sentences
-   - Use subheadings for different aspects
-   - Add "Why this matters" context when relevant
-   - DO NOT use markdown beyond headers/links
-   - DO NOT list sources without analysis
-   `
-    : "You are a helpful assistant. Real-time search is currently unavailable.";
+Never make more than one search query per user question. Answer directly after receiving search results.`;
 
   const stream = streamText({
     system: systemMessage,
-    model: myProvider.languageModel(modelId),
+    model: myProvider.languageModel(selectedModelId),
+    temperature: 0, // Set temperature to 0 for deterministic output
     experimental_transform: [
       smoothStream({
         chunking: "word",
@@ -94,9 +67,30 @@ export async function POST(request: NextRequest) {
     ],
     messages,
     toolCallStreaming: true,
-    // Only enable tools if agentic mode is enabled and Exa API key is available
-    tools: isAgenticEnabled && exaApiKey ? tools : undefined,
-    maxSteps: 3, // Allow up to 3 steps for multi-turn tool interactions
+    // Enable tools with specific constraints to enforce the 2-step flow
+    tools,
+    toolChoice: "auto", // Allow tool selection but control via system prompt
+    // We control the flow via the system prompt and maxSteps
+    maxSteps: 2, // Increase max steps slightly for potential multi-query breakdown
+    // Add onStepFinish callback to track and log each step of the tool execution process
+    onStepFinish({ toolCalls, finishReason, usage }) {
+      console.log(`Step finished: ${toolCalls.length} tool calls executed`);
+      
+      // Log tool calls and results for debugging
+      if (toolCalls.length > 0) {
+        console.log('Tool calls:', JSON.stringify(toolCalls.map(call => ({
+          id: call.toolCallId, // Use toolCallId instead of id
+          name: call.toolName, // Use toolName instead of name
+          args: call.args
+        })), null, 2));
+      }
+      
+      // Log finish reason and token usage if available
+      console.log(`Finish reason: ${finishReason}`);
+      if (usage) {
+        console.log(`Token usage: ${JSON.stringify(usage)}`);
+      }
+    },
   });
 
   return stream.toDataStreamResponse({
