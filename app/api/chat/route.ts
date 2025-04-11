@@ -3,8 +3,8 @@ import { Message, smoothStream, streamText } from "ai";
 import { NextRequest } from "next/server";
 import { tools } from "@/lib/tools";
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// Allow streaming responses up to 120 seconds
+export const maxDuration = 120;
 
 // Error handler function for tools
 function errorHandler(error: unknown) {
@@ -35,62 +35,41 @@ export async function POST(request: NextRequest) {
     isReasoningEnabled?: boolean;
     isAgenticEnabled?: boolean;
   } = await request.json();
+
+  // Ensure valid model ID is used
+  const modelId = selectedModelId && Object.keys(models).includes(selectedModelId)
+    ? selectedModelId 
+    : "sonnet-3.7";
+    
+  console.log("[DEBUG] Using model:", modelId);
+  console.log("[DEBUG] Reasoning mode enabled:", isReasoningEnabled);
+  console.log("[DEBUG] Agentic mode enabled:", isAgenticEnabled);
+
+  // Ensure the API key is properly set
+  const exaApiKey = process.env.EXA_API_KEY;
+  console.log("[DEBUG] Exa API Key configured:", exaApiKey ? "Yes" : "No");
+  console.log("[DEBUG] Exa API Key length:", exaApiKey ? exaApiKey.length : 0);
+  console.log("[DEBUG] Exa API Key format valid:", exaApiKey ? /^[a-f0-9-]{36}$/.test(exaApiKey) : false);
   
-  // Get current date and time information
-  const now = new Date();
-  const currentDate = now.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const currentTime = now.toLocaleTimeString('en-US');
-  
-  // Prepare system message with specific 2-step flow instructions and current temporal context
-  const systemMessage = `You are a research assistant who follows a strict 2-step process:
-
-1. FIRST STEP: When you receive a question, use the exaSearch tool ONCE to gather relevant information.
-2. SECOND STEP: After receiving search results, provide a comprehensive answer based ONLY on those results without making additional searches.
-
-Current temporal context: Today is ${currentDate}, and the current time is ${currentTime}. It is currently the year ${now.getFullYear()}. Always consider this current temporal information when formulating search queries and providing responses.
-
-Never make more than one search query per user question. Answer directly after receiving search results.`;
+  // Prepare system message based on whether we have a valid API key
+  const currentDate = new Date();
+  const systemMessage = exaApiKey 
+    ? `You are a highly capable PhD research assistant operating on ${currentDate.toISOString()}. Your primary function is to find, analyze, and synthesize current information accurately and efficiently. When searching, prioritize recent content and always consider the temporal context of your searches. Always cite your sources and provide context for your findings, including publication dates when available. The current year is ${currentDate.getFullYear()}, and you should focus on information relevant to this timeframe.`
+    : "You are a helpful assistant. Real-time search is currently unavailable.";
 
   const stream = streamText({
     system: systemMessage,
-    model: myProvider.languageModel(selectedModelId),
-    temperature: 0, // Set temperature to 0 for deterministic output
-    experimental_transform: [
-      smoothStream({
-        chunking: "word",
-      }),
-    ],
+    model: myProvider.languageModel(modelId),
+    // experimental_transform: [
+    //   smoothStream({
+    //     chunking: "word",
+    //   }),
+    // ],
     messages,
     toolCallStreaming: true,
-    // Enable tools with specific constraints to enforce the 2-step flow
-    tools,
-    toolChoice: "auto", // Allow tool selection but control via system prompt
-    // We control the flow via the system prompt and maxSteps
-    maxSteps: 2, // Increase max steps slightly for potential multi-query breakdown
-    // Add onStepFinish callback to track and log each step of the tool execution process
-    onStepFinish({ toolCalls, finishReason, usage }) {
-      console.log(`Step finished: ${toolCalls.length} tool calls executed`);
-      
-      // Log tool calls and results for debugging
-      if (toolCalls.length > 0) {
-        console.log('Tool calls:', JSON.stringify(toolCalls.map(call => ({
-          id: call.toolCallId, // Use toolCallId instead of id
-          name: call.toolName, // Use toolName instead of name
-          args: call.args
-        })), null, 2));
-      }
-      
-      // Log finish reason and token usage if available
-      console.log(`Finish reason: ${finishReason}`);
-      if (usage) {
-        console.log(`Token usage: ${JSON.stringify(usage)}`);
-      }
-    },
+    // Only enable tools if agentic mode is enabled and Exa API key is available
+    tools: tools,
+    maxSteps: 2
   });
 
   return stream.toDataStreamResponse({

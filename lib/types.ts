@@ -24,16 +24,16 @@ export interface SearchResults {
 // Helper function to convert Exa search results to our app format
 export function convertExaResultsToSearchResults(exaResults: ExaSearchResult[]): SearchResults {
   const results: SearchResultItem[] = exaResults.map(result => ({
-    title: result.title,
+    title: result.title ?? null, // Convert undefined to null
     url: result.url,
-    content: result.text,
-    snippet: Array.isArray(result.highlights) 
+    content: result.text || undefined,
+    snippet: Array.isArray(result.highlights)
       ? typeof result.highlights[0] === 'string'
         ? result.highlights.join(' ')
-        : result.highlights.map(h => h.text).filter(Boolean).join(' ')
+        : result.highlights.map(h => typeof h === 'string' ? h : (h.text || '')).filter(Boolean).join(' ')
       : undefined,
     publishedDate: result.publishedDate,
-    author: result.author,
+    author: result.author ?? null, // Convert undefined to null
     score: result.score
   }));
 

@@ -14,12 +14,14 @@ interface SearchSectionProps {
   tool: ToolInvocation
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  className?: string
 }
 
 export function SearchSection({
   tool,
   isOpen,
-  onOpenChange
+  onOpenChange,
+  className = ''
 }: SearchSectionProps) {
   const { isLoading } = useChat({
     id: CHAT_ID
@@ -27,7 +29,7 @@ export function SearchSection({
   
   // Check tool state
   const isToolLoading = tool.state === 'call'
-  const isToolError = tool.state === 'error'
+  const isToolError = tool.state === 'error' as any // Type assertion to avoid TypeScript error
   
   // Get tool results when available
   const searchResults = tool.state === 'result' ? tool.result : undefined
@@ -39,6 +41,7 @@ export function SearchSection({
     ? ` [${includeDomains.join(', ')}]`
     : ''
 
+  // Show the search query in the header
   const header = (
     <ToolArgsSection
       tool="search"
@@ -54,11 +57,12 @@ export function SearchSection({
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       showIcon={false}
+      className={className}
     >
       {isToolError && (
         <Section>
           <div className="text-red-600 dark:text-red-400">
-            Search error: {tool.error || 'An unknown error occurred'}
+            Search error: {(tool as any).error || 'An unknown error occurred'}
           </div>
         </Section>
       )}

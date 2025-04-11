@@ -13,14 +13,14 @@ export const markdownComponents: Partial<Components> = {
   },
   li: ({ children, ...props }) => {
     return (
-      <li className="py-1" {...props}>
+      <li {...props}>
         {children}
       </li>
     );
   },
   ul: ({ children, ...props }) => {
     return (
-      <ul className="list-decimal list-outside ml-4" {...props}>
+      <ul className="list-disc list-outside ml-4" {...props}>
         {children}
       </ul>
     );

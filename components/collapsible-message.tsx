@@ -12,6 +12,7 @@ interface CollapsibleMessageProps {
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
   showIcon?: boolean
+  className?: string
 }
 
 export function CollapsibleMessage({
@@ -21,10 +22,12 @@ export function CollapsibleMessage({
   isOpen,
   onOpenChange,
   children,
-  showIcon = true
+  showIcon = true,
+  className = ''
 }: CollapsibleMessageProps) {
   return (
-    <div className="flex flex-row w-full py-2 px-4 rounded-xl dark:bg-zinc-800 bg-zinc-100">
+    <div className={`${className}`}>
+      <div className="flex flex-row w-full py-2 px-4 rounded-xl dark:bg-zinc-800 bg-zinc-100">
       <div className="flex flex-col w-full">
         <div 
           className={`flex items-start justify-between ${isCollapsible ? 'cursor-pointer' : ''}`}
@@ -40,5 +43,6 @@ export function CollapsibleMessage({
         {isOpen && <div className="pt-4">{children}</div>}
       </div>
     </div>
+  </div>
   )
 } 

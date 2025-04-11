@@ -23,11 +23,11 @@ export const myProvider = customProvider({
       }),
       model: anthropic("claude-3-7-sonnet-20250219"),
     }),
-    "llama-3.3-70b": wrapLanguageModel({
+    "llama-4-maverick": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
         tagName: "think",
       }),
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq("meta-llama/llama-4-maverick-17b-128e-instruct"),
     }),
     "gpt-4o": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
@@ -48,7 +48,7 @@ export type modelID = Parameters<(typeof myProvider)["languageModel"]>["0"];
 
 export const models: Record<modelID, string> = {
   "sonnet-3.7": "Claude Sonnet 3.7",
-  "llama-3.3-70b": "Llama 3.3 70B",
+  "llama-4-maverick": "Llama 4 Maverick",
   "gpt-4o": "GPT-4o",
   "o3-mini": "o3-mini",
 };

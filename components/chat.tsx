@@ -3,7 +3,7 @@
 import cn from "classnames";
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Messages } from "./messages";
 import { modelID, models } from "@/lib/models";
 import { Footnote } from "./footnote";
@@ -11,22 +11,17 @@ import {
   ArrowUpIcon,
   CheckedSquare,
   ChevronDownIcon,
-  ChevronUpIcon,
   StopIcon,
   UncheckedSquare,
 } from "./icons";
 import { Input } from "./input";
 import { CHAT_ID } from "@/lib/constants";
-import { SearchResults } from "./search-results";
-import { SearchSection } from "./search-section";
-import { SearchResultItem } from "@/lib/types";
 
 export function Chat() {
   const [input, setInput] = useState<string>("");
   const [selectedModelId, setSelectedModelId] = useState<modelID>("sonnet-3.7");
   const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(false);
   const [isAgenticEnabled, setIsAgenticEnabled] = useState<boolean>(false);
-  const [isPendingResponse, setIsPendingResponse] = useState<boolean>(false); // Track immediate submission state
 
   // Load model preference from localStorage if available
   useEffect(() => {
@@ -53,42 +48,20 @@ export function Chat() {
     localStorage.setItem("isAgenticEnabled", String(isAgenticEnabled));
   }, [selectedModelId, isReasoningEnabled, isAgenticEnabled]);
 
-  // Track related questions state
-  const [showRelated, setShowRelated] = useState(false);
-  const [relatedQuestions, setRelatedQuestions] = useState<string[]>([
-    "What are the limitations of current AI models in simulating complex molecular interactions?",
-    "How does AI-enhanced molecular computing improve personalized medicine for cancer treatment?",
-    "What are the ethical considerations of using AI in molecular design and drug discovery?"
-  ]);
-
-  // Track open tool invocation state
-  const [openToolId, setOpenToolId] = useState<string | null>(null);
-  
-  const { messages, append, status, stop, addToolResult } = useChat({
+  const { messages, append, status, stop } = useChat({
     id: CHAT_ID,
     body: {
       selectedModelId,
       isReasoningEnabled,
-      isAgenticEnabled: true // Always enable agentic mode for search functionality
+      isAgenticEnabled
     },
-    onError: (error) => {
-      console.error("Chat error:", error);
+    onError: () => {
       toast.error("An error occurred, please try again!");
     },
-    onFinish: () => {
-      console.log("Chat finished, checking for tool calls in messages");
-      // Log the last message to check for tool calls
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage && lastMessage.toolInvocations) {
-        console.log("Tool invocations in last message:", lastMessage.toolInvocations);
-        // Show related questions after a successful response
-        setShowRelated(true);
-      }
-    },
-    maxSteps: 5 // Increase max steps for handling tool calls
+    maxSteps: 3, // Allow multiple steps for handling tool calls
   });
 
-  const isGeneratingResponse = ["streaming", "submitted"].includes(status) || isPendingResponse;
+  const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   // Handle mutual exclusivity between reasoning and agentic modes
   const handleReasoningToggle = () => {
@@ -109,75 +82,25 @@ export function Chat() {
     }
   };
 
-  // Function to handle clicking a related question
-  const handleRelatedQuestionClick = (question: string) => {
-    append({
-      role: "user",
-      content: question,
-      createdAt: new Date(),
-    });
-    setShowRelated(false); // Hide related questions after selection
-  };
-
   return (
     <div
       className={cn(
-        "px-4 md:px-0 pb-4 flex flex-col h-dvh items-center w-full max-w-3xl",
+        "px-4 md:px-0 pb-4 pt-8 flex flex-col min-h-[calc(100vh-64px)] mx-auto items-center w-full max-w-3xl",
         {
-          "justify-between pt-16 md:pt-24": messages.length > 0, /* Increased top padding when messages exist */
-          "justify-center gap-4 pt-8": messages.length === 0,
+          "justify-between": messages.length > 0,
+          "justify-center gap-4": messages.length === 0,
         },
       )}
     >
       {messages.length > 0 ? (
-        <>
-          <Messages 
-            messages={messages} 
-            status={status} 
-            openToolId={openToolId}
-            setOpenToolId={setOpenToolId}
-            isPendingResponse={isPendingResponse}
-          />
-          
-          {/* Related Questions Component - similar to first screenshot */}
-          {showRelated && messages.length > 0 && (
-            <div className="w-full mb-4 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-              <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-900">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-800">
-                    <span className="text-sm">↺</span>
-                  </div>
-                  <span className="font-medium">Related</span>
-                </div>
-                <button 
-                  onClick={() => setShowRelated(!showRelated)}
-                  className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                >
-                  <ChevronUpIcon />
-                </button>
-              </div>
-              <div className="p-2">
-                {relatedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    className="flex items-center gap-2 w-full text-left p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-                    onClick={() => handleRelatedQuestionClick(question)}
-                  >
-                    <span className="text-blue-500">→</span>
-                    <span>{question}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        <Messages messages={messages} status={status} />
       ) : (
         <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
           <div className="flex flex-row gap-2 items-center">
             <div>Welcome to Atoma</div>
           </div>
           <div className="dark:text-zinc-500 text-zinc-400">
-            How can I assist you today?
+            What can we innovate today.
           </div>
         </div>
       )}
@@ -263,13 +186,10 @@ export function Chat() {
                 if (isGeneratingResponse) {
                   stop();
                 } else {
-                  setIsPendingResponse(true); // Set pending state immediately
                   append({
                     role: "user",
                     content: input,
                     createdAt: new Date(),
-                  }).then(() => {
-                    setIsPendingResponse(false); // Clear pending state after response starts
                   });
                 }
 
