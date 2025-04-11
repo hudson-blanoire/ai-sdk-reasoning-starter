@@ -9,6 +9,7 @@ import { SearchSkeleton } from './default-skeleton'
 import { SearchResults } from './search-results'
 import { SearchResultsImageSection } from './search-results-image'
 import { Section, ToolArgsSection } from './section'
+import { Search } from 'lucide-react'
 
 interface SearchSectionProps {
   tool: ToolInvocation
@@ -41,11 +42,12 @@ export function SearchSection({
     ? ` [${includeDomains.join(', ')}]`
     : ''
 
-  // Show the search query in the header
+  // Show the search query in the header with a search icon
   const header = (
     <ToolArgsSection
       tool="search"
       number={searchResults?.results?.length}
+      icon={<Search className="h-4 w-4 mr-2 text-primary" />}
     >{`${query}${includeDomainsString}`}</ToolArgsSection>
   )
 
@@ -61,8 +63,9 @@ export function SearchSection({
     >
       {isToolError && (
         <Section>
-          <div className="text-red-600 dark:text-red-400">
-            Search error: {(tool as any).error || 'An unknown error occurred'}
+          <div className="text-red-600 dark:text-red-400 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+            <p className="font-medium mb-1">Search error</p>
+            <p className="text-sm">{(tool as any).error || 'An unknown error occurred'}</p>
           </div>
         </Section>
       )}
@@ -71,7 +74,7 @@ export function SearchSection({
       {searchResults &&
         searchResults.images &&
         searchResults.images.length > 0 && (
-          <Section>
+          <Section title="Images">
             <SearchResultsImageSection
               images={searchResults.images}
               query={query}
@@ -81,9 +84,11 @@ export function SearchSection({
         
       {/* Show skeleton when loading */}
       {isLoading && isToolLoading ? (
-        <SearchSkeleton />
+        <div className="mt-2">
+          <SearchSkeleton />
+        </div>
       ) : searchResults?.results ? (
-        <Section title="Sources">
+        <Section title="Sources" className="mt-2">
           <SearchResults results={searchResults.results} />
         </Section>
       ) : null}
