@@ -20,6 +20,14 @@ body {
     overflow-x: hidden;
 }
 
+/* Full-width scrollbar container */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 /* Improved line spacing for markdown content */
 .prose p {
     line-height: 1.7 !important;

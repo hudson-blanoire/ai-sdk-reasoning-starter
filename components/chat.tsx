@@ -92,7 +92,7 @@ export function Chat() {
         },
       )}
     >
-      <div className="w-full flex-grow overflow-auto pb-32">
+      <div className="w-full max-w-3xl mx-auto h-full overflow-auto px-4 pb-32">
         {messages.length > 0 ? (
           <Messages messages={messages} status={status} />
         ) : (
