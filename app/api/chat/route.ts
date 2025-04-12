@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     toolCallStreaming: true,
     // Only enable tools if agentic mode is enabled and Exa API key is available
     tools: tools,
-    maxSteps: 5
+    maxSteps: 2
   });
 
   return stream.toDataStreamResponse({

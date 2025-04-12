@@ -5,6 +5,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import './globals.css';
+import { DeployButton } from '@/components/deploy-button';
+import { StarButton } from '@/components/star-button';
 
 export const metadata: Metadata = {
   title: 'Atoma',
