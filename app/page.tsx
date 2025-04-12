@@ -10,7 +10,7 @@ import { useState } from "react";
 
 export default function Home() {
   return (
-    <div className="w-full h-[calc(100vh-64px)] overflow-hidden flex justify-center mt-16">
+    <div className="w-full h-[calc(100vh-64px)] overflow-auto flex justify-center mt-16">
       <div className="w-full relative">
         <Chat />
       </div>
