@@ -143,7 +143,7 @@ export function Messages({
   }, [messagesLength])
 
   return (
-    <div className="flex flex-col overflow-y-auto w-full mb-4 flex-grow overflow-x-hidden" ref={messagesRef}>
+    <div className="flex flex-col w-full" ref={messagesRef}>
       {messages.map((message, index) => {
         // Handle user messages
         if (message.role === 'user') {

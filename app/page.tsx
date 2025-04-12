@@ -10,9 +10,10 @@ import { useState } from "react";
 
 export default function Home() {
   return (
-    <div className="w-full h-[calc(100vh-64px)] flex justify-center mt-16">
-      {/* Added margin-top to prevent header overlap */}
-      <Chat />
+    <div className="w-full h-[calc(100vh-64px)] overflow-hidden flex justify-center mt-16">
+      <div className="w-full max-w-3xl px-4 overflow-auto">
+        <Chat />
+      </div>
     </div>
   );
 }

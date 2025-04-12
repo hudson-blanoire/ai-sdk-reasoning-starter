@@ -85,28 +85,30 @@ export function Chat() {
   return (
     <div
       className={cn(
-        "px-4 md:px-0 pb-4 pt-8 flex flex-col min-h-[calc(100vh-64px)] mx-auto items-center w-full max-w-3xl",
+        "pb-4 pt-8 flex flex-col h-full items-center w-full relative",
         {
-          "justify-between": messages.length > 0,
+          "justify-start": messages.length > 0,
           "justify-center gap-4": messages.length === 0,
         },
       )}
     >
-      {messages.length > 0 ? (
-        <Messages messages={messages} status={status} />
-      ) : (
-        <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
-          <div className="flex flex-row gap-2 items-center">
-            <div>Welcome to Atoma</div>
+      <div className="w-full flex-grow overflow-auto pb-32">
+        {messages.length > 0 ? (
+          <Messages messages={messages} status={status} />
+        ) : (
+          <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
+            <div className="flex flex-row gap-2 items-center">
+              <div>Welcome to Atoma</div>
+            </div>
+            <div className="dark:text-zinc-500 text-zinc-400">
+              What can we innovate today.
+            </div>
           </div>
-          <div className="dark:text-zinc-500 text-zinc-400">
-            What can we innovate today.
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="flex flex-col gap-4 w-full">
-        <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100">
+      <div className="sticky-input">
+        <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100 shadow-lg">
           <Input
             input={input}
             setInput={setInput}
@@ -200,8 +202,10 @@ export function Chat() {
             </button>
           </div>
         </div>
-
-        <Footnote />
+        
+        <div className="mt-2 flex justify-center">
+          <Footnote />
+        </div>
       </div>
     </div>
   );

@@ -33,6 +33,18 @@ body {
     margin-bottom: 0.5em;
 }
 
+/* Sticky input bar styles */
+.sticky-input {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 48rem;
+    z-index: 10;
+    padding: 0 1rem;
+}
+
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
     width: 8px;
