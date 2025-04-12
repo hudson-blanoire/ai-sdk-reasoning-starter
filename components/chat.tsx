@@ -3,7 +3,7 @@
 import cn from "classnames";
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Messages } from "./messages";
 import { modelID, models } from "@/lib/models";
 import { Footnote } from "./footnote";
@@ -22,7 +22,6 @@ export function Chat() {
   const [selectedModelId, setSelectedModelId] = useState<modelID>("sonnet-3.7");
   const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(false);
   const [isAgenticEnabled, setIsAgenticEnabled] = useState<boolean>(false);
-  const messagesRef = useRef<HTMLDivElement>(null);
 
   // Load model preference from localStorage if available
   useEffect(() => {
@@ -83,42 +82,27 @@ export function Chat() {
     }
   };
 
-  // Scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTo({
-        top: messagesRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [messages]);
-
   return (
-    <div className="flex flex-col w-full h-[calc(100vh-64px)]">
-      {/* Scrollable message container with bottom padding for input visibility */}
-      <div 
-        ref={messagesRef}
-        className="w-full flex-grow overflow-y-auto pb-48"
-      >
-        <div className="max-w-3xl mx-auto px-4 pt-8">
+    <div className="flex flex-col h-full items-center">
+      <div className="w-full max-w-3xl mx-auto flex flex-col h-full">
+        <div className="flex-grow overflow-y-auto px-4">
           {messages.length > 0 ? (
             <Messages messages={messages} status={status} />
           ) : (
-            <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
-              <div className="flex flex-row gap-2 items-center">
-                <div>Welcome to Atoma</div>
-              </div>
-              <div className="dark:text-zinc-500 text-zinc-400">
-                What can we innovate today.
+            <div className="flex flex-col gap-6 h-full justify-center">
+              <div className="flex flex-col gap-0.5 sm:text-2xl text-xl">
+                <div className="flex flex-row gap-2 items-center">
+                  <div>Welcome to Atoma</div>
+                </div>
+                <div className="dark:text-zinc-500 text-zinc-400">
+                  What can we innovate today.
+                </div>
               </div>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Fixed input container */}
-      <div className="input-container">
-        <div className="flex flex-col gap-4 w-full">
+        <div className="input-container mt-8 mb-8">
           <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100 shadow-lg">
             <Input
               input={input}
@@ -214,7 +198,7 @@ export function Chat() {
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center mt-2">
             <Footnote />
           </div>
         </div>
