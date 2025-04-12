@@ -132,18 +132,8 @@ export function Messages({
   setOpenToolId = () => {}, 
   isPendingResponse = false 
 }: MessagesProps) {
-  const messagesRef = useRef<HTMLDivElement>(null)
-  const messagesLength = useMemo(() => messages.length, [messages])
-
-  // Scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight
-    }
-  }, [messagesLength])
-
   return (
-    <div className="flex flex-col w-full" ref={messagesRef}>
+    <div className="flex flex-col w-full">
       {messages.map((message, index) => {
         // Handle user messages
         if (message.role === 'user') {

@@ -3,7 +3,7 @@
 import cn from "classnames";
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Messages } from "./messages";
 import { modelID, models } from "@/lib/models";
 import { Footnote } from "./footnote";
@@ -22,6 +22,7 @@ export function Chat() {
   const [selectedModelId, setSelectedModelId] = useState<modelID>("sonnet-3.7");
   const [isReasoningEnabled, setIsReasoningEnabled] = useState<boolean>(false);
   const [isAgenticEnabled, setIsAgenticEnabled] = useState<boolean>(false);
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   // Load model preference from localStorage if available
   useEffect(() => {
@@ -82,129 +83,140 @@ export function Chat() {
     }
   };
 
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTo({
+        top: messagesRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages]);
+
   return (
-    <div
-      className={cn(
-        "pb-4 pt-8 flex flex-col h-full items-center w-full relative",
-        {
-          "justify-start": messages.length > 0,
-          "justify-center gap-4": messages.length === 0,
-        },
-      )}
-    >
-      <div className="w-full max-w-3xl mx-auto h-full px-4 pb-32">
-        {messages.length > 0 ? (
-          <Messages messages={messages} status={status} />
-        ) : (
-          <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
-            <div className="flex flex-row gap-2 items-center">
-              <div>Welcome to Atoma</div>
+    <div className="flex flex-col w-full h-[calc(100vh-64px)]">
+      {/* Scrollable message container with bottom padding for input visibility */}
+      <div 
+        ref={messagesRef}
+        className="w-full flex-grow overflow-y-auto pb-48"
+      >
+        <div className="max-w-3xl mx-auto px-4 pt-8">
+          {messages.length > 0 ? (
+            <Messages messages={messages} status={status} />
+          ) : (
+            <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
+              <div className="flex flex-row gap-2 items-center">
+                <div>Welcome to Atoma</div>
+              </div>
+              <div className="dark:text-zinc-500 text-zinc-400">
+                What can we innovate today.
+              </div>
             </div>
-            <div className="dark:text-zinc-500 text-zinc-400">
-              What can we innovate today.
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="sticky-input">
-        <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100 shadow-lg">
-          <Input
-            input={input}
-            setInput={setInput}
-            selectedModelId={selectedModelId}
-            isGeneratingResponse={isGeneratingResponse}
-            isReasoningEnabled={isReasoningEnabled}
-          />
+      {/* Fixed input container */}
+      <div className="input-container">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100 shadow-lg">
+            <Input
+              input={input}
+              setInput={setInput}
+              selectedModelId={selectedModelId}
+              isGeneratingResponse={isGeneratingResponse}
+              isReasoningEnabled={isReasoningEnabled}
+            />
 
-          <div className="absolute bottom-2.5 left-2.5 flex gap-2">
-            <button
-              disabled={selectedModelId !== "sonnet-3.7"}
-              className={cn(
-                "relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-2 dark:hover:bg-zinc-600 hover:bg-zinc-200 cursor-pointer disabled:opacity-50",
-                {
-                  "dark:bg-zinc-600 bg-zinc-200": isReasoningEnabled,
-                },
-              )}
-              onClick={handleReasoningToggle}
-            >
-              {isReasoningEnabled ? <CheckedSquare /> : <UncheckedSquare />}
-              <div>Reasoning</div>
-            </button>
-            
-            <button
-              className={cn(
-                "relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-2 dark:hover:bg-zinc-600 hover:bg-zinc-200 cursor-pointer",
-                {
-                  "dark:bg-zinc-600 bg-zinc-200": isAgenticEnabled,
-                },
-              )}
-              onClick={handleAgenticToggle}
-            >
-              {isAgenticEnabled ? <CheckedSquare /> : <UncheckedSquare />}
-              <div>Agentic</div>
-            </button>
-          </div>
-
-          <div className="absolute bottom-2.5 right-2.5 flex flex-row gap-2">
-            <div className="relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-0.5 dark:hover:bg-zinc-700 hover:bg-zinc-200 cursor-pointer">
-              <div className="flex justify-center items-center text-zinc-500 dark:text-zinc-400 px-1">
-                <span className="pr-1">{models[selectedModelId]}</span>
-                <ChevronDownIcon />
-              </div>
-
-              <select
-                className="absolute opacity-0 w-full p-1 left-0 cursor-pointer"
-                value={selectedModelId}
-                onChange={(event) => {
-                  const newModelId = event.target.value as modelID;
-                  if (newModelId !== "sonnet-3.7") {
-                    setIsReasoningEnabled(false);
-                  }
-                  setSelectedModelId(newModelId);
-                }}
+            <div className="absolute bottom-2.5 left-2.5 flex gap-2">
+              <button
+                disabled={selectedModelId !== "sonnet-3.7"}
+                className={cn(
+                  "relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-2 dark:hover:bg-zinc-600 hover:bg-zinc-200 cursor-pointer disabled:opacity-50",
+                  {
+                    "dark:bg-zinc-600 bg-zinc-200": isReasoningEnabled,
+                  },
+                )}
+                onClick={handleReasoningToggle}
               >
-                {Object.entries(models).map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
+                {isReasoningEnabled ? <CheckedSquare /> : <UncheckedSquare />}
+                <div>Reasoning</div>
+              </button>
+              
+              <button
+                className={cn(
+                  "relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-2 dark:hover:bg-zinc-600 hover:bg-zinc-200 cursor-pointer",
+                  {
+                    "dark:bg-zinc-600 bg-zinc-200": isAgenticEnabled,
+                  },
+                )}
+                onClick={handleAgenticToggle}
+              >
+                {isAgenticEnabled ? <CheckedSquare /> : <UncheckedSquare />}
+                <div>Agentic</div>
+              </button>
             </div>
 
-            <button
-              className={cn(
-                "size-8 flex flex-row justify-center items-center dark:bg-zinc-100 bg-zinc-900 dark:text-zinc-900 text-zinc-100 p-1.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-300 hover:scale-105 active:scale-95 transition-all",
-                {
-                  "dark:bg-zinc-200 dark:text-zinc-500":
-                    isGeneratingResponse || input === "",
-                },
-              )}
-              onClick={() => {
-                if (input === "") {
-                  return;
-                }
+            <div className="absolute bottom-2.5 right-2.5 flex flex-row gap-2">
+              <div className="relative w-fit text-sm p-1.5 rounded-lg flex flex-row items-center gap-0.5 dark:hover:bg-zinc-700 hover:bg-zinc-200 cursor-pointer">
+                <div className="flex justify-center items-center text-zinc-500 dark:text-zinc-400 px-1">
+                  <span className="pr-1">{models[selectedModelId]}</span>
+                  <ChevronDownIcon />
+                </div>
 
-                if (isGeneratingResponse) {
-                  stop();
-                } else {
-                  append({
-                    role: "user",
-                    content: input,
-                    createdAt: new Date(),
-                  });
-                }
+                <select
+                  className="absolute opacity-0 w-full p-1 left-0 cursor-pointer"
+                  value={selectedModelId}
+                  onChange={(event) => {
+                    const newModelId = event.target.value as modelID;
+                    if (newModelId !== "sonnet-3.7") {
+                      setIsReasoningEnabled(false);
+                    }
+                    setSelectedModelId(newModelId);
+                  }}
+                >
+                  {Object.entries(models).map(([id, name]) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                setInput("");
-              }}
-            >
-              {isGeneratingResponse ? <StopIcon /> : <ArrowUpIcon />}
-            </button>
+              <button
+                className={cn(
+                  "size-8 flex flex-row justify-center items-center dark:bg-zinc-100 bg-zinc-900 dark:text-zinc-900 text-zinc-100 p-1.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-300 hover:scale-105 active:scale-95 transition-all",
+                  {
+                    "dark:bg-zinc-200 dark:text-zinc-500":
+                      isGeneratingResponse || input === "",
+                  },
+                )}
+                onClick={() => {
+                  if (input === "") {
+                    return;
+                  }
+
+                  if (isGeneratingResponse) {
+                    stop();
+                  } else {
+                    append({
+                      role: "user",
+                      content: input,
+                      createdAt: new Date(),
+                    });
+                  }
+
+                  setInput("");
+                }}
+              >
+                {isGeneratingResponse ? <StopIcon /> : <ArrowUpIcon />}
+              </button>
+            </div>
           </div>
-        </div>
-        
-        <div className="mt-2 flex justify-center">
-          <Footnote />
+
+          <div className="text-center">
+            <Footnote />
+          </div>
         </div>
       </div>
     </div>
