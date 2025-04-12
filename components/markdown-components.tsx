@@ -2,25 +2,25 @@ import { Components } from "react-markdown";
 import Link from "next/link";
 
 export const markdownComponents: Partial<Components> = {
-  p: ({ children }) => <p className="leading-6">{children}</p>,
+  p: ({ children }) => <p className="leading-relaxed my-3">{children}</p>,
   pre: ({ children }) => <>{children}</>,
   ol: ({ children, ...props }) => {
     return (
-      <ol className="list-decimal list-outside ml-4" {...props}>
+      <ol className="list-decimal list-outside ml-4 my-4 space-y-2" {...props}>
         {children}
       </ol>
     );
   },
   li: ({ children, ...props }) => {
     return (
-      <li {...props}>
+      <li className="leading-relaxed my-1" {...props}>
         {children}
       </li>
     );
   },
   ul: ({ children, ...props }) => {
     return (
-      <ul className="list-disc list-outside ml-4" {...props}>
+      <ul className="list-disc list-outside ml-4 my-4 space-y-2" {...props}>
         {children}
       </ul>
     );

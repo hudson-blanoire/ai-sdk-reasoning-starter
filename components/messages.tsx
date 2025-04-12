@@ -143,7 +143,7 @@ export function Messages({
   }, [messagesLength])
 
   return (
-    <div className="flex flex-col overflow-y-auto w-full mb-4 flex-grow" ref={messagesRef}>
+    <div className="flex flex-col overflow-y-auto w-full mb-4 flex-grow overflow-x-hidden" ref={messagesRef}>
       {messages.map((message, index) => {
         // Handle user messages
         if (message.role === 'user') {
@@ -163,12 +163,12 @@ export function Messages({
         return (
           <div key={`${message.role}-${index}`} className="mb-8">
             {message.content && (
-              <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start mb-6">
                 <div className="rounded-xl py-2 px-4 w-fit max-w-full sm:max-w-[85%] md:max-w-[75%] dark:bg-zinc-800 bg-zinc-100 break-words">
                   <Markdown 
                     components={markdownComponents}
                     rehypePlugins={[rehypeRaw]}
-                    className="prose dark:prose-invert prose-zinc prose-sm sm:prose-base max-w-none"
+                    className="prose dark:prose-invert prose-zinc prose-sm sm:prose-base max-w-none leading-relaxed"
                   >
                     {typeof message.content === 'string' ? message.content : ''}
                   </Markdown>

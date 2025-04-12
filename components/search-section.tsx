@@ -88,9 +88,35 @@ export function SearchSection({
           <SearchSkeleton />
         </div>
       ) : searchResults?.results ? (
-        <Section title="Sources" className="mt-2">
-          <SearchResults results={searchResults.results} />
-        </Section>
+        <>
+          <Section title="Sources" className="mt-2">
+            <SearchResults results={searchResults.results} />
+          </Section>
+          
+          {/* Add sources attribution section */}
+          <Section title="Attribution" className="mt-4">
+            <div className="text-xs text-muted-foreground">
+              <p className="mb-2">Information sourced from:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {searchResults.results.slice(0, 5).map((result, index) => (
+                  <li key={`source-${index}`}>
+                    <a 
+                      href={result.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {result.title || result.url}
+                    </a>
+                    {result.publishedDate && (
+                      <span className="ml-2 opacity-70">({new Date(result.publishedDate).toLocaleDateString()})</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Section>
+        </>
       ) : null}
     </CollapsibleMessage>
   )
