@@ -11,6 +11,7 @@ import { SearchSection } from './search-section'
 import { CHAT_ID } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { convertExaResultsToSearchResults } from '@/lib/types'
+import { MessageLoading } from './ui/message-loading'
 
 interface ReasoningPart {
   type: "reasoning";
@@ -132,8 +133,19 @@ export function Messages({
   setOpenToolId = () => {}, 
   isPendingResponse = false 
 }: MessagesProps) {
+  const messagesRef = useRef<HTMLDivElement>(null)
+  const messagesLength = useMemo(() => messages.length, [messages])
+  const isGeneratingResponse = ["streaming", "submitted"].includes(status);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+    }
+  }, [messagesLength])
+
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col overflow-y-auto w-full mb-4 flex-grow overflow-x-hidden" ref={messagesRef}>
       {messages.map((message, index) => {
         // Handle user messages
         if (message.role === 'user') {
@@ -183,6 +195,16 @@ export function Messages({
           </div>
         )
       })}
+      
+      {/* Show message loading indicator when the AI is responding */}
+      {isGeneratingResponse && (
+        <div className="flex flex-col items-start mb-8">
+          <div className="rounded-xl py-3 px-4 w-fit max-w-full dark:bg-zinc-800 bg-zinc-100 break-words flex items-center gap-2">
+            <MessageLoading />
+            <span className="text-sm text-zinc-500">Thinking...</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
