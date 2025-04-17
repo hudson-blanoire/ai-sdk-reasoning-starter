@@ -47,29 +47,7 @@ export default function RootLayout({
               </div>
             </SidebarHeader>
             <SidebarContent>
-              <SidebarGroup>
-                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild tooltip="Home">
-                        <Link href="/">
-                          <Home />
-                          <span>Home</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild tooltip="Settings">
-                        <Link href="/settings">
-                          <Settings />
-                          <span>Settings</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
+              {/* Sidebar content can be added here later */}
             </SidebarContent>
           </Sidebar>
           
