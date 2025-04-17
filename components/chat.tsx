@@ -85,7 +85,7 @@ export function Chat() {
   return (
     <div
       className={cn(
-        "pb-4 pt-8 flex flex-col min-h-[calc(100vh-64px)] items-center w-full",
+        "flex flex-col h-full items-center w-full",
         {
           "justify-between": messages.length > 0,
           "justify-center gap-4": messages.length === 0,
@@ -105,7 +105,7 @@ export function Chat() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col gap-4 w-full pb-4">
         <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100">
           <Input
             input={input}
