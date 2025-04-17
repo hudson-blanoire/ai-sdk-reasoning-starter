@@ -85,27 +85,23 @@ export function Chat() {
   return (
     <div
       className={cn(
-        "flex flex-col h-full items-center w-full",
-        {
-          "justify-between": messages.length > 0,
-          "justify-center gap-4": messages.length === 0,
-        },
+        "flex flex-col h-full w-full"
       )}
     >
       {messages.length > 0 ? (
         <Messages messages={messages} status={status} />
       ) : (
-        <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full">
-          <div className="flex flex-row gap-2 items-center">
+        <div className="flex-grow flex flex-col justify-center items-center">
+          <div className="flex flex-col gap-0.5 sm:text-2xl text-xl w-full text-center px-4">
             <div>Welcome to Atoma</div>
-          </div>
-          <div className="dark:text-zinc-500 text-zinc-400">
-            What can we innovate today.
+            <div className="dark:text-zinc-500 text-zinc-400">
+              What can we innovate today.
+            </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-4 w-full pb-4">
+      <div className="flex-shrink-0 flex flex-col gap-2 w-full px-4 pb-4 pt-2">
         <div className="w-full relative p-3 dark:bg-zinc-800 rounded-2xl flex flex-col gap-1 bg-zinc-100">
           <Input
             input={input}
