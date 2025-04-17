@@ -34,7 +34,7 @@ export function CollapsibleMessage({
           onClick={() => isCollapsible && onOpenChange(!isOpen)}
         >
           <div className="flex-1">{header}</div>
-          {isCollapsible && (
+          {isCollapsible && showIcon && (
             <div className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded">
               {isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
             </div>

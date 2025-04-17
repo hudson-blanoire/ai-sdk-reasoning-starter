@@ -136,6 +136,14 @@ export function Messages({
   const messagesRef = useRef<HTMLDivElement>(null)
   const messagesLength = useMemo(() => messages.length, [messages])
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
+  const [localOpenToolId, setLocalOpenToolId] = useState<string | null>(null);
+
+  // Use either the prop or local state for tracking open tool
+  const effectiveOpenToolId = openToolId !== null ? openToolId : localOpenToolId;
+  const handleOpenToolChange = (id: string | null) => {
+    setOpenToolId(id);
+    setLocalOpenToolId(id);
+  };
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -185,8 +193,8 @@ export function Messages({
                   <SearchSection
                     key={`legacy-tool-${toolIndex}`}
                     tool={tool}
-                    isOpen={openToolId === tool.id}
-                    onOpenChange={(open) => setOpenToolId(open ? tool.id : null)}
+                    isOpen={effectiveOpenToolId === tool.id}
+                    onOpenChange={(open) => handleOpenToolChange(open ? tool.id : null)}
                   />
                 )
               }

@@ -9,7 +9,7 @@ import { SearchSkeleton } from './default-skeleton'
 import { SearchResults } from './search-results'
 import { SearchResultsImageSection } from './search-results-image'
 import { Section, ToolArgsSection } from './section'
-import { Search } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface SearchSectionProps {
   tool: ToolInvocation
@@ -44,11 +44,20 @@ export function SearchSection({
 
   // Show the search query in the header with a search icon
   const header = (
-    <ToolArgsSection
-      tool="search"
-      number={searchResults?.results?.length}
-      icon={<Search className="h-4 w-4 mr-2 text-primary" />}
-    >{`${query}${includeDomainsString}`}</ToolArgsSection>
+    <div className="flex items-center justify-between w-full">
+      <ToolArgsSection
+        tool="search"
+        number={searchResults?.results?.length}
+        icon={<Search className="h-4 w-4 mr-2 text-primary" />}
+      >{`${query}${includeDomainsString}`}</ToolArgsSection>
+      
+      <div className="flex items-center ml-2">
+        {isOpen ? 
+          <ChevronUp className="h-4 w-4 text-muted-foreground" /> : 
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        }
+      </div>
+    </div>
   )
 
   return (
