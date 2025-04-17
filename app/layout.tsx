@@ -7,6 +7,22 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { DeployButton } from '@/components/deploy-button';
 import { StarButton } from '@/components/star-button';
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader, 
+  SidebarProvider, 
+  SidebarTrigger,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarInset
+} from '@/components/ui/sidebar';
+import { Home, Settings } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Atoma',
@@ -22,28 +38,64 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
-        <div className="fixed right-0 left-0 w-full top-0 bg-white dark:bg-zinc-950">
-          <div className="flex justify-between items-center p-4">
-            <div className="flex flex-row items-center gap-2 shrink-0 ">
-              <span className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-2 home-links">
-                <div className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-4">
-                  <Link className="flex flex-row items-center gap-2" href="/">
-                    <div className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-2">
-                      <div className="jsx-e3e12cc6f9ad5a71 text-lg font-bold text-zinc-800 dark:text-zinc-100">
-                        Atoma
+        <SidebarProvider>
+          <Sidebar>
+            <SidebarHeader>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold">Atoma</h2>
+                <SidebarTrigger className="h-4 w-4" />
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild tooltip="Home">
+                        <Link href="/">
+                          <Home />
+                          <span>Home</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild tooltip="Settings">
+                        <Link href="/settings">
+                          <Settings />
+                          <span>Settings</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
+          
+          <SidebarInset>
+            <div className="fixed right-0 left-0 w-full top-0 bg-white dark:bg-zinc-950">
+              <div className="flex justify-between items-center p-4">
+                <div className="flex flex-row items-center gap-2 shrink-0 ">
+                  <span className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-2 home-links">
+                    <div className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-4">
+                      <div className="jsx-e3e12cc6f9ad5a71 flex flex-row items-center gap-2">
+                        <SidebarTrigger className="h-5 w-5" />
                       </div>
                     </div>
-                  </Link>
+                  </span>
                 </div>
-              </span>
+                <div className="flex flex-row items-center gap-2 shrink-0">
+                  {/* Removed StarButton and DeployButton */}
+                </div>
+              </div>
             </div>
-            <div className="flex flex-row items-center gap-2 shrink-0">
-              {/* Removed StarButton and DeployButton */}
+            <Toaster position="top-center" />
+            <div className="pt-16 pb-4">
+              {children}
             </div>
-          </div>
-        </div>
-        <Toaster position="top-center" />
-        {children}
+          </SidebarInset>
+        </SidebarProvider>
       </body>
     </html>
   );
