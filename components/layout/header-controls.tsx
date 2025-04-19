@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SignInButtonCustom } from '@/components/ui/sign-in-button';
 import { SignUpButtonCustom } from '@/components/ui/sign-up-button';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 
 // New component for left side of header
 export function LeftHeaderControls() {
@@ -21,12 +23,18 @@ export function LeftHeaderControls() {
 export function HeaderControls() {
   return (
     <div className="flex flex-row items-center gap-2 shrink-0">
+      <Link href="https://buy.polar.sh/polar_cl_DRzYvxwNctCaKyGEWJrUbxiiO1gmKgpaomi4B0syoxI" target="_blank">
+        <Button variant="outline" size="sm">Upgrade</Button>
+      </Link>
       <ThemeToggle />
       <SignedOut>
         <SignUpButtonCustom />
         <SignInButtonCustom />
       </SignedOut>
       <SignedIn>
+        <Link href="/portal">
+          <Button variant="outline" size="sm">Billing</Button>
+        </Link>
         <UserButton afterSignOutUrl="/" />
       </SignedIn>
     </div>
