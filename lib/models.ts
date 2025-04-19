@@ -1,12 +1,17 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
   defaultSettingsMiddleware,
 } from "ai";
+
+// Create OpenRouter provider instance
+const openrouter = createOpenRouter({
+  // apiKey will be read from OPENROUTER_API_KEY environment variable
+});
 
 // custom provider with different model settings:
 export const myProvider = customProvider({
@@ -23,23 +28,23 @@ export const myProvider = customProvider({
       }),
       model: anthropic("claude-3-7-sonnet-20250219"),
     }),
-    "llama-4-maverick": wrapLanguageModel({
-      middleware: extractReasoningMiddleware({
-        tagName: "think",
-      }),
-      model: groq("meta-llama/llama-4-maverick-17b-128e-instruct"),
-    }),
     "gpt-4o": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
         tagName: "think",
       }),
       model: openai("gpt-4o"),
     }),
-    "o3-mini": wrapLanguageModel({
+    "google/gemini-2.5-pro-preview-03-25": wrapLanguageModel({
       middleware: extractReasoningMiddleware({
         tagName: "think",
       }),
-      model: openai("o3-mini"),
+      model: openrouter("google/gemini-2.5-pro-preview-03-25"),
+    }),
+    "meta-llama/llama-3.3-70b-instruct": wrapLanguageModel({
+      middleware: extractReasoningMiddleware({
+        tagName: "think",
+      }),
+      model: openrouter("meta-llama/llama-3.3-70b-instruct"),
     }),
   },
 });
@@ -48,7 +53,7 @@ export type modelID = Parameters<(typeof myProvider)["languageModel"]>["0"];
 
 export const models: Record<modelID, string> = {
   "sonnet-3.7": "Claude Sonnet 3.7",
-  "llama-4-maverick": "Llama 4 Maverick",
   "gpt-4o": "GPT-4o",
-  "o3-mini": "o3-mini",
+  "google/gemini-2.5-pro-preview-03-25": "Gemini 2.5 Pro (Preview)",
+  "meta-llama/llama-3.3-70b-instruct": "Llama 3.3 70B Instruct",
 };
